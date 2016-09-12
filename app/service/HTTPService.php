@@ -5,6 +5,9 @@ class HTTPService
 {
     public function run(){
         $http = new \swoole_http_server("0.0.0.0", getConf("http_port"));
+        $http->set(array(
+            'worker_num' => 1,   //工作进程数量
+        ));
         $http->on('request', function ($request, $response) {
             if($request->server['request_uri'] == "/"){
                 $response->end(file_get_contents(STATIC_PATH."/index.html"));

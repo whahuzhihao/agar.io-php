@@ -6,12 +6,10 @@ var jshint = require('gulp-jshint');
 var uglify = require('gulp-uglify');
 var babel = require('gulp-babel');
 var webpack = require('webpack-stream');
+var run = require('gulp-run');
 
 // 检查脚本
 gulp.task('lint', function() {
-    //gulp.src(['client/js/*.js', '!node_modules/**/*.js', '!bin/**/*.js'])
-    //    .pipe(jshint())
-    //    .pipe(jshint.reporter('default'));
     return gulp.src(['client/js/*.js', '!node_modules/**/*.js', '!bin/**/*.js'])
         .pipe(jshint({
             esnext: true
@@ -36,7 +34,8 @@ gulp.task('move-client', function () {
 
 
 gulp.task('run', ['build'], function () {
-
+    //run('php server.php').exec();
+    //run('php hserver.php').exec();
 });
 
 // 默认任务

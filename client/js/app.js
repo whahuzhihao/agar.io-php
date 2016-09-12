@@ -5,8 +5,10 @@ WebSocket.prototype.emit = function(action, data){
     var arr = {
         action: action
     };
-    if(data){
+    if(arguments.length == 2){
         arr.data = data;
+    }else if(arguments.length > 2){
+        arr.data = arguments.slice(1);
     }
     return this.send(JSON.stringify(arr));
 };
@@ -14,25 +16,6 @@ WebSocket.prototype.emit = function(action, data){
 WebSocket.prototype.on = function(method, fun){
     this['on'+method] = fun;
 };
-
-//var ws = new WebSocket('ws://127.0.0.1:9501');
-//setupSocket(ws,'player');
-////开启ws服务
-//ws.onopen = function(){
-//    ws.emit("hello");
-//};
-//
-//ws.onclose = function (){
-//
-//};
-//
-//ws.onmessage = function (data) {
-//    console.log(data);
-//};
-//
-//ws.onerror = function(err) {
-//    console.log(err);
-//};
 
 var ChatClient = require('./chat-client');
 var Canvas = require('./canvas');
@@ -63,11 +46,11 @@ function startGame(type) {
     document.getElementById('gameAreaWrapper').style.opacity = 1;
     if (!socket) {
         socket = new WebSocket('ws://127.0.0.1:9501');
-        setupSocket(socket);
+        setupSocket(socket, type);
     }
     if (!global.animLoopHandle)
         animloop();
-    socket.emit('respawn');
+
     window.chat.socket = socket;
     window.chat.registerFunctions();
     window.canvas.socket = socket;
@@ -193,6 +176,11 @@ function setupSocket(socket, type) {
     socket.on('open',function(){
         console.log('Connect to server!');
         socket.emit('query',{type:type});
+
+    });
+
+    socket.on('ready',function(){
+        socket.emit('respawn');
     });
 
     socket.on('message', function(mes){
@@ -297,7 +285,9 @@ function setupSocket(socket, type) {
     });
 
     // Handle movement.
-    socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
+    //socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
+    socket.on('serverTellPlayerMove', function (data) {
+        var userData = data[0], foodsList = data[1], massList = data[2], virusList = data[3];
         var playerData;
         for(var i =0; i< userData.length; i++) {
             if(typeof(userData[i].id) == "undefined") {

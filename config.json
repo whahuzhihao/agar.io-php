@@ -25,7 +25,7 @@
     "slowBase": 4.5,
     "logChat": 0,
     "networkUpdateFactor": 40,
-    "maxHeartbeatInterval": 5000,
+    "maxHeartbeatInterval": 5,
     "massLossRate": 1,
     "minMassLoss": 50,
     "mergeTimer": 15,

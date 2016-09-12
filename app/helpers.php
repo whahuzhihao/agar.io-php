@@ -39,39 +39,42 @@ if (!function_exists('randomInRange')){
 
 
 if (!function_exists('uniformPosition')) {
-    function uniformPosition($poitns, $radius){
-        //TODO
-        return randomPosition($radius);
-
+    function uniformPosition($points, $radius){
         $bestCandidate = 0;
         $maxDistance = 0;
         $numberOfCandidates = 10;
 
-        if (count($points) === 0) {
+        $lenPoints = count($points);
+        if ($lenPoints === 0) {
             return randomPosition($radius);
         }
 
-//        for ($ci = 0; $ci < $numberOfCandidates; $ci++) {
-//                $minDistance = Infinity;
-//                $candidate = exports.randomPosition(radius);
-//                candidate.radius = radius;
-//
-//                for ($pi = 0; pi < points.length; pi++) {
-//                    $distance = exports.getDistance(candidate, points[pi]);
-//                if (distance < minDistance) {
-//                    minDistance = distance;
-//                }
-//            }
-//
-//            if (minDistance > maxDistance) {
-//                bestCandidate = candidate;
-//                maxDistance = minDistance;
-//            } else {
-//                return exports.randomPosition(radius);
-//            }
-//        }
-//
-//        return bestCandidate;
+        //找到离所有人最远的一个点
+        for ($ci = 0; $ci < $numberOfCandidates; $ci++) {
+            $minDistance = INF;
+            $candidate = randomPosition($radius);
+            $candidate['radius'] = $radius;
+
+            for ($pi = 0; $pi < $lenPoints; $pi++) {
+                if(is_object($points[$pi]) && method_exists($points[$pi],'toPointArray')){
+                    $distance = getDistance($candidate, $points[$pi]->toPointArray());
+                }else{
+                    $distance = getDistance($candidate, $points[$pi]);
+                }
+                if ($distance < $minDistance) {
+                    $minDistance = $distance;
+                }
+            }
+
+            if ($minDistance > $maxDistance) {
+                $bestCandidate = $candidate;
+                $maxDistance = $minDistance;
+            } else {
+                return randomPosition($radius);
+            }
+        }
+
+        return $bestCandidate;
     }
 }
 
@@ -85,5 +88,29 @@ if (!function_exists('randomPosition')) {
             'x'=>randomInRange($radius, $gameWidth - $radius),
             'y'=>randomInRange($radius, $gameHeight - $radius)
         );
+    }
+}
+
+if (!function_exists('findIndex')){
+    function findIndex($arr, $id) {
+        foreach($arr as $k => &$row){
+            if($row->id == $id){
+                return $k;
+            }
+        }
+        return -1;
+    };
+
+}
+
+if (!function_exists('object_to_array')){
+    function object_to_array($obj){
+        $_arr = is_object($obj)? get_object_vars($obj) :$obj;
+        $arr = array();
+        foreach ($_arr as $key => $val){
+            $val=(is_array($val)) || is_object($val) ? object_to_array($val) :$val;
+            $arr[$key] = $val;
+        }
+        return $arr;
     }
 }

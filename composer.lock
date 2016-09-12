@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e8ae8c08b77908eb758b849fe90df7e4",
-    "content-hash": "84f85dcf3c65666acb1ee75ce6801161",
+    "hash": "6ce37da2dce0c7c44fa9b7b38a888a66",
+    "content-hash": "9c28393aa215d3d667053f88f9572095",
     "packages": [
         {
             "name": "hassankhan/config",
@@ -65,6 +65,50 @@
             "time": "2016-02-11 16:21:17"
         },
         {
+            "name": "huzhihao/sat",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/whahuzhihao/SAT.git",
+                "reference": "95c37dbb371b738103b92537b371bfabf9f1cb65"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://packagist.phpcomposer.com/files/whahuzhihao/SAT/95c37dbb371b738103b92537b371bfabf9f1cb65.zip",
+                "reference": "95c37dbb371b738103b92537b371bfabf9f1cb65",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SAT\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "huzhihao",
+                    "email": "whahuzhihao@126.com",
+                    "homepage": "http://www.bewithyou.me"
+                }
+            ],
+            "description": "A library performing collision detection of simple 2D shapes with Separating Axis Theorem.",
+            "homepage": "https://github.com/whahuzhihao/SAT",
+            "keywords": [
+                "2d",
+                "Separating Axis Theorem",
+                "collision",
+                "sat"
+            ],
+            "time": "2016-09-12 07:05:01"
+        },
+        {
             "name": "markbaker/quadtrees",
             "version": "dev-master",
             "source": {
@@ -108,9 +152,10 @@
     ],
     "packages-dev": [],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {
-        "markbaker/quadtrees": 20
+        "markbaker/quadtrees": 20,
+        "huzhihao/sat": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

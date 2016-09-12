@@ -17,7 +17,8 @@
   "require": {
     "ext-swoole" : "^1.8.3",
     "markbaker/quadtrees": "dev-master",
-    "hassankhan/config": "^0.10.0"
+    "hassankhan/config": "^0.10.0",
+    "huzhihao/sat": "dev-master"
   },
   "autoload": {
     "psr-4": {
@@ -27,5 +28,8 @@
       "app/helpers.php"
     ]
   },
-  "prefer-stable": true
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require-dev": {
+  }
 }

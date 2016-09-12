@@ -5,3 +5,4 @@ vendor
 .idea
 swoole.ini
 bin
+composer.lock
