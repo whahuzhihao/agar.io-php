@@ -1,5 +1,5 @@
 # Agar.io-php
-Transplanted from (agar-io clone)[https://github.com/huytd/agar.io-clone].  
+Transplanted from [agar-io clone](https://github.com/huytd/agar.io-clone).  
 Backend rewrite with PHP swoole extension 
 
 # NOT FINISHED YET
