@@ -1,3 +1,4 @@
+var domain = '127.0.0.1';
 WebSocket.prototype.emit = function(action, data){
     if(WebSocket.prototype.hasOwnProperty(action)) {
         return this[action](data);
@@ -45,7 +46,7 @@ function startGame(type) {
     document.getElementById('startMenuWrapper').style.maxHeight = '0px';
     document.getElementById('gameAreaWrapper').style.opacity = 1;
     if (!socket) {
-        socket = new WebSocket('ws://127.0.0.1:9501');
+        socket = new WebSocket('ws://'+domain+':9501');
         setupSocket(socket, type);
     }else{
         socket.emit('query',{type:type});

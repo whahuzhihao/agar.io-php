@@ -13,7 +13,7 @@ class Cell extends Circle{
 
     public function __construct($x = 0, $y = 0, $radius = 0, $mass = 0, $speed = null){
         $this->mass = $mass;
-        $this->speed = $speed;
+        $this->speed = is_null($speed)? 25 : $speed;
         parent::__construct($x, $y, $radius);
     }
 }
