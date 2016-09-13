@@ -344,31 +344,37 @@ class GameLogicService
             $cell->radius = massToRadius($cell->mass);
             $playerCircle->r = $cell->radius;
 
-            $tree = new \QuadTrees\QuadTree(new \QuadTrees\QuadTreeBoundingBox(new \QuadTrees\QuadTreeXYPoint(0, 0), getCOnf('gameWidth'), getConf('gameHeight')));
-            foreach ($this->userList as &$user) {
-                if($user->type == User::TYPE_SPECTATE || $user->id == $currentPlayer->id){
-                    continue;
-                }
-                $p = new TreePoint($user->x, $user->y, $user);
-                $tree->insert($p);
-            }
-            $currentBox = new \QuadTrees\QuadTreeBoundingBox(new \QuadTrees\QuadTreeXYPoint($currentPlayer->x, $currentPlayer->y), $currentPlayer->w, $currentPlayer->h);
-            $other = $tree->search($currentBox);
+
+//            $tree = new \QuadTrees\QuadTree(new \QuadTrees\QuadTreeBoundingBox(new \QuadTrees\QuadTreeXYPoint(-$cell->radius, -$cell->radius), getConf('gameWidth')+$cell->radius, getConf('gameHeight')+$cell->radius));
+//            foreach ($this->userList as &$user) {
+//                if($user->type == User::TYPE_SPECTATE || $user->id == $currentPlayer->id){
+//                    continue;
+//                }
+//                $p = new TreePoint($user->x, $user->y, $user);
+//                $tree->insert($p);
+//            }
+//
+////            $currentBox = new \QuadTrees\QuadTreeBoundingBox(new \QuadTrees\QuadTreeXYPoint($cell->x, $cell->y), $currentPlayer->w, $currentPlayer->h);
+//            $currentBox = new \QuadTrees\QuadTreeBoundingBox(new \QuadTrees\QuadTreeXYPoint($cell->x-$cell->radius, $cell->y-$cell->radius), 2*$cell->radius, 2*$cell->radius);
+//            $other = $tree->search($currentBox);
             $playerCollisions = array();
             //遍历与当前玩家的当前cell碰撞的玩家的cells
-            foreach ($other as &$point) {
-                foreach ($point->user->cells as $i => &$cell2) {
-                    if ($cell2->mass > 10 && $point->user->id != $currentPlayer->id) {
+            foreach ($this->userList as &$u) {
+                if($u->id == $currentPlayer->id){
+                    continue;
+                }
+                foreach ($u->cells as $i => &$cell2) {
+                    if ($cell2->mass > 10) {
 //                        $response = new Response();
                         $collided = Collision::testCircleCircle($playerCircle, new C(new V($cell2->x, $cell2->y), $cell2->radius));
                         //如果碰撞了记录一下 aUser是当前玩家的当前细胞 bUser是要被吃掉的细胞
                         if ($collided) {
                             $playerCollisions[] = array(
 //                                'response' => $response,
-                                'aUser' => &$cell,
+                                'aUser' => $cell,
                                 'bUser' => array(
-                                    'id' => $point->user->id,
-                                    'name' => $point->user->name,
+                                    'id' => $u->id,
+                                    'name' => $u->name,
                                     'x' => $cell2->x,
                                     'y' => $cell2->y,
                                     'num' => $i,
@@ -379,10 +385,10 @@ class GameLogicService
                     }
                 }
             }
-
+//            unset($other);
             foreach ($playerCollisions as &$collision) {
                 //如果当前玩家的当前细胞的质量大于1.1倍的可以被吃掉的细胞质量 并且半径大于圆心距离的1.75倍 才能吃掉
-                if ($collision['aUser']->mass > $collision['bUser']['mass'] * 1.1 && $collision['aUser']->radius > sqrt(pow($collision['aUser']->x - $collision['bUser']['x'], 2) + pow($collision['aUser']->y - $collision['bUser']['y'], 2)) * 1.75) {
+                if ($collision['aUser']->mass > $collision['bUser']['mass'] * 1 && $collision['aUser']->radius > sqrt(pow($collision['aUser']->x - $collision['bUser']['x'], 2) + pow($collision['aUser']->y - $collision['bUser']['y'], 2)) * 1) {
                     $numUser = findIndex($this->userList, $collision['bUser']['id']);
                     if ($numUser > -1) {
                         if (count($this->userList[$numUser]->cells) > 1) {
@@ -402,6 +408,8 @@ class GameLogicService
                     $collision['aUser']->mass += $collision['bUser']['mass'];
                 }
             }
+            unset($playerCollisions);
+            unset($treee);
         }
     }
 
