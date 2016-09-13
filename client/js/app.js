@@ -47,6 +47,8 @@ function startGame(type) {
     if (!socket) {
         socket = new WebSocket('ws://127.0.0.1:9501');
         setupSocket(socket, type);
+    }else{
+        socket.emit('query',{type:type});
     }
     if (!global.animLoopHandle)
         animloop();
@@ -584,7 +586,7 @@ function gameLoop() {
         graph.textAlign = 'center';
         graph.fillStyle = '#FFFFFF';
         graph.font = 'bold 30px sans-serif';
-        graph.fillText('You died!', global.screenWidth / 2, constant.screenHeight / 2);
+        graph.fillText('You died!', global.screenWidth / 2, global.screenHeight / 2);
     }
     else if (!global.disconnected) {
         if (global.gameStart) {

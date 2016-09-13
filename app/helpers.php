@@ -55,11 +55,11 @@ if (!function_exists('uniformPosition')) {
             $candidate = randomPosition($radius);
             $candidate['radius'] = $radius;
 
-            for ($pi = 0; $pi < $lenPoints; $pi++) {
-                if(is_object($points[$pi]) && method_exists($points[$pi],'toPointArray')){
-                    $distance = getDistance($candidate, $points[$pi]->toPointArray());
+            foreach($points as &$p){
+                if(is_object($p) && method_exists($p,'toPointArray')){
+                    $distance = getDistance($candidate, $p->toPointArray());
                 }else{
-                    $distance = getDistance($candidate, $points[$pi]);
+                    $distance = getDistance($candidate, $p);
                 }
                 if ($distance < $minDistance) {
                     $minDistance = $distance;

@@ -1,4 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
+server.log
 node_modules
 npm-debug.log
 vendor

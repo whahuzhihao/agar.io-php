@@ -34,8 +34,8 @@ gulp.task('move-client', function () {
 
 
 gulp.task('run', ['build'], function () {
-    //run('php server.php').exec();
-    //run('php hserver.php').exec();
+    run('php server.php > server.log 2>&1').exec();
+    run('php hserver.php').exec();
 });
 
 // 默认任务

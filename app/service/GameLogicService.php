@@ -99,20 +99,13 @@ class GameLogicService
                     array_splice($this->userList, $index, 1);
                 }
                 $this->send('welcome', object_to_array($this->tmpUser[$fd]), $fd);
-                echo '[INFO] User ' . $this->tmpUser[$fd]->name . ' respawned!\n';
+                echo '[INFO] User ' . $this->tmpUser[$fd]->name . " respawned!\n";
                 break;
             case 'gotit':
-//                console.log('[INFO] Player ' + player.name + ' connecting!');
                 if (findIndex($this->userList, $data['id']) > -1) {
-//                    console.log('[INFO] Player ID is already connected, kicking.');
-//                    socket.disconnect();
                     $this->close($fd);
-//                } else if (!util.validNick(player.name)) {
-//                    socket.emit('kick', 'Invalid username.');
-//                    socket.disconnect();
+                    //TODO nick name validate
                 } else {
-//                    console.log('[INFO] Player ' + player.name + ' connected!');
-//                    sockets[player.id] = socket;
                     $this->tmpUser[$data['id']]->name = $data['name'];
                     $this->tmpUser[$data['id']]->screenWidth = $data['screenWidth'];
                     $this->tmpUser[$data['id']]->screenHeight = $data['screenHeight'];
@@ -120,7 +113,6 @@ class GameLogicService
                     $this->userList[] = &$this->tmpUser[$data['id']];
                     $this->send('playerJoin', array('name' => $data['name'],), $fd);
                     $this->send('gameSetup', array('gameWidth' => getConf('gameWidth'), 'gameHeight' => getConf('gameHeight')), $fd);
-//            console.log('Total players: ' + users.length);
                 }
                 break;
             case 'ping':
@@ -132,13 +124,10 @@ class GameLogicService
                 break;
             case 'disconnect':
                 if (($index = findIndex($this->userList, $fd)) > -1) {
-//                    unset($this->tmpUser[$fd]);
                     array_splice($this->userList, $index, 1);
+                    $this->broadcast('playerDisconnect', array('name' => $this->tmpUser[$fd]->name));
+                    unset($this->tmpUser[$fd]);
                 }
-                $this->broadcast('playerDisconnect', array('name' => $this->tmpUser[$fd]->name));
-//                console.log('[INFO] User ' + currentPlayer.name + ' disconnected!');
-
-//                socket.broadcast.emit('', { name: currentPlayer.name });
                 break;
             case 'playerChat':
                 $_sender = preg_replace('/(<([^>]+)>)/ig', '', $data['sender']);
@@ -169,11 +158,6 @@ class GameLogicService
                                     }
                                 }
                             }
-                            if ($reason !== '') {
-//                                console.log('[ADMIN] User ' + users[e].name + ' kicked successfully by ' + currentPlayer.name + ' for reason ' + reason);
-                            } else {
-//                                console.log('[ADMIN] User ' + users[e].name + ' kicked successfully by ' + currentPlayer.name);
-                            }
                             $this->send('serverMSG', 'User ' . $user->name . ' was kicked by ' . $this->tmpUser[$fd]->name, $fd);
                             $this->send('kick', $reason, $user->id);
                             $this->close($user->id);
@@ -186,7 +170,7 @@ class GameLogicService
                         $this->send('serverMSG', 'Could not locate user or user is an admin.', $fd);
                     }
                 } else {
-                        $this->send('serverMSG', 'You are not permitted to use this command.', $fd);
+                    $this->send('serverMSG', 'You are not permitted to use this command.', $fd);
                 }
                 break;
             case '0':
@@ -200,24 +184,23 @@ class GameLogicService
                 foreach($this->tmpUser[$fd]->cells as $k => &$cell)
                 {
                     if((($cell->mass >= getConf('defaultPlayerMass') + getConf('fireFood')) && getConf('fireFood') > 0) || ($cell->mass >= 20 && getConf('fireFood') == 0)){
-                    $masa = 1;
-                    if(getConf('fireFood') > 0){
-                        $masa = getConf('fireFood');
-                    } else {
-                        $masa = $cell->mass * 0.1;
-                    }
-                    $cell->mass -= $masa;
-                    $this->tmpUser[$fd]->massTotal -= $masa;
-                    $this->massFood[]= new MassFood($fd, $k,
-                        $cell->x,
-                        $cell->y,
-                        massToRadius($masa),
-                        $masa,
-                        $this->tmpUser[$fd]->hue,
-                        new Vector(
-                            $this->tmpUser[$fd]->x - $cell->x + $this->tmpUser[$fd]->target->x,
-                            $this->tmpUser[$fd]->y - $cell->y + $this->tmpUser[$fd]->target->y),
-                        25);
+                        if(getConf('fireFood') > 0){
+                            $masa = getConf('fireFood');
+                        } else {
+                            $masa = $cell->mass * 0.1;
+                        }
+                        $cell->mass -= $masa;
+                        $this->tmpUser[$fd]->massTotal -= $masa;
+                        $this->massFood[]= new MassFood($fd, $k,
+                            $cell->x,
+                            $cell->y,
+                            massToRadius($masa),
+                            $masa,
+                            $this->tmpUser[$fd]->hue,
+                            new Vector(
+                                $this->tmpUser[$fd]->x - $cell->x + $this->tmpUser[$fd]->target->x,
+                                $this->tmpUser[$fd]->y - $cell->y + $this->tmpUser[$fd]->target->y),
+                            25);
                     }
                 }
                 break;
@@ -260,7 +243,6 @@ class GameLogicService
     private function addVirus($toAdd) {
         while ($toAdd--) {
             $mass = randomInRange(getConf('virus')['defaultMass']['from'], getConf('virus')['defaultMass']['to']);
-            echo $mass;
             $radius = massToRadius($mass);
             $position = getConf('virusUniformDisposition') ? uniformPosition($this->virus, $radius) : randomPosition($radius);
             //TODO
@@ -282,7 +264,7 @@ class GameLogicService
         //实物总质量
         $foodMass = count($this->food) * getConf('foodMass');
         //玩家总质量
-        $userMass = array_reduce(array_map(function($v){return $v->mass;}, $this->userList),function($a,$b){return $a+$b;},0);
+        $userMass = array_reduce(array_map(function($v){return $v->massTotal;}, $this->userList),function($a,$b){return $a+$b;},0);
         //地图上玩家+食物的总质量
         $totalMass = $foodMass + $userMass;
         //与游戏总质量的差
@@ -294,13 +276,9 @@ class GameLogicService
         $foodToAdd = min($foodDiff, $maxFoodDiff);
         $foodToRemove = -max($foodDiff, $maxFoodDiff);
         if ($foodToAdd > 0) {
-            //console.log('[DEBUG] Adding ' + foodToAdd + ' food to level!');
             $this->addFood($foodToAdd);
-            //console.log('[DEBUG] Mass rebalanced!');
         } elseif ($foodToRemove > 0) {
-            //console.log('[DEBUG] Removing ' + foodToRemove + ' food from level!');
             $this->removeFood($foodToRemove);
-            //console.log('[DEBUG] Mass rebalanced!');
         }
 
         $virusToAdd = getConf('maxVirus') - count($this->virus);
@@ -310,7 +288,10 @@ class GameLogicService
         }
     }
 
-    private function tickPlayer(&$currentPlayer){
+    private function tickPlayer(&$currentPlayer, $key){
+        if(!isset($this->userList[$key])){
+            return false;
+        }
         $socketId = $currentPlayer->id;
         //maxHeartbeatInterval按秒计算
         if($currentPlayer->lastHeartBeat < time() - getConf('maxHeartbeatInterval')) {
@@ -328,14 +309,15 @@ class GameLogicService
             //判断被吃掉的food
             foreach ($this->food as $k => &$f) {
                 if (Collision::pointInCircle(new V($f->x, $f->y), $playerCircle)) {
-                    array_splice($this->food, $k, 1);
+//                    array_splice($this->food, $k, 1);
+                    unset($this->food[$k]);
                     $foodEatenNum++;
                 }
             }
+//            $this->food = array_values($this->food);
             //判断有没有碰到细菌 并且可以让自己分裂(这个cell的质量大于细菌的质量)
             foreach ($this->virus as $k => &$v) {
                 if (Collision::pointInCircle(new V($v->x, $v->y), $playerCircle) && $cell->mass > $v->mass) {
-                    echo $v->mass."\n";
                     $this->send('virusSplit', $z, $socketId);
                     break;
                 }
@@ -348,10 +330,11 @@ class GameLogicService
                         //DO NOTHING
                     } elseif ($cell->mass > $m->masa * 1.1) {
                         $masaGanada += $m->masa;
-                        array_splice($this->massFood, $k, 1);
+                        unset($this->massFood[$k]);
                     }
                 }
             }
+//            $this->massFood = array_values($this->massFood);
             if ($cell->speed === null) {
                 $cell->speed = 65;
             }
@@ -363,7 +346,7 @@ class GameLogicService
 
             $tree = new \QuadTrees\QuadTree(new \QuadTrees\QuadTreeBoundingBox(new \QuadTrees\QuadTreeXYPoint(0, 0), getCOnf('gameWidth'), getConf('gameHeight')));
             foreach ($this->userList as &$user) {
-                if($user->type == User::TYPE_SPECTATE){
+                if($user->type == User::TYPE_SPECTATE || $user->id == $currentPlayer->id){
                     continue;
                 }
                 $p = new TreePoint($user->x, $user->y, $user);
@@ -375,7 +358,7 @@ class GameLogicService
             //遍历与当前玩家的当前cell碰撞的玩家的cells
             foreach ($other as &$point) {
                 foreach ($point->user->cells as $i => &$cell2) {
-                    if ($cell2->mass > 10 && $point->user->id !== $currentPlayer->id) {
+                    if ($cell2->mass > 10 && $point->user->id != $currentPlayer->id) {
 //                        $response = new Response();
                         $collided = Collision::testCircleCircle($playerCircle, new C(new V($cell2->x, $cell2->y), $cell2->radius));
                         //如果碰撞了记录一下 aUser是当前玩家的当前细胞 bUser是要被吃掉的细胞
@@ -400,19 +383,19 @@ class GameLogicService
             foreach ($playerCollisions as &$collision) {
                 //如果当前玩家的当前细胞的质量大于1.1倍的可以被吃掉的细胞质量 并且半径大于圆心距离的1.75倍 才能吃掉
                 if ($collision['aUser']->mass > $collision['bUser']['mass'] * 1.1 && $collision['aUser']->radius > sqrt(pow($collision['aUser']->x - $collision['bUser']['x'], 2) + pow($collision['aUser']->y - $collision['bUser']['y'], 2)) * 1.75) {
-//                    console.log('[DEBUG] Killing user: ' + collision.bUser.id);
-//                    console.log('[DEBUG] Collision info:');
-//                    console.log(collision);
                     $numUser = findIndex($this->userList, $collision['bUser']['id']);
                     if ($numUser > -1) {
                         if (count($this->userList[$numUser]->cells) > 1) {
                             $this->userList[$numUser]->massTotal -= $collision['bUser']['mass'];
-                            array_splice($this->userList[$numUser]->cells, $collision['bUser']['num'], 1);
+//                            array_splice($this->userList[$numUser]->cells, $collision['bUser']['num'], 1);
+                            unset($this->userList[$numUser]->cells[$collision['bUser']['num']]);
                         } else {
-                            array_splice($this->userList[$numUser]->cells, $collision['bUser']['num'], 1);
-                            $this->send( "playerDied", array(
+//                            array_splice($this->userList, $numUser, 1);
+                            unset($this->userList[$numUser]);
+                            $this->send("playerDied", array(
                                 'name' => $collision['bUser']['name']
                             ),$socketId);
+                            $this->send("RIP", null, $collision['bUser']['id']);
                         }
                     }
                     $currentPlayer->massTotal += $collision['bUser']['mass'];
@@ -458,7 +441,7 @@ class GameLogicService
             $cell->x += $deltaX;
             // Find best solution. 遍历所有细胞
             foreach($player->cells as $j => &$cell2) {
-                if($j != $i && $player->cells[$i]) {
+                if(isset($player->cells[$j]) && $cell2 != $cell) {
                     //两个细胞的圆心距离
                     $distance = sqrt(pow($cell2->y - $cell->y,2) + pow($cell2->x - $cell->x,2));
                     //两个细胞的半径合
@@ -481,31 +464,32 @@ class GameLogicService
                         else if($distance < $radiusTotal / 1.75) {
                             $cell->mass += $cell2->mass;
                             $cell->radius = massToRadius($cell->mass);
-                            //j号细胞被i吃掉了 需要重新排序下表
-                            array_splice($player->cells, $j ,1);
+                            //j号细胞被i吃掉了
+                            unset($player->cells[$j]);
+//                            array_splice($player->cells, $j ,1);
                         }
                     }
                 }
             }
-            //还没遍历到头
-            if(count($player->cells) > $i) {
-                $borderCalc = $player->cells[$i]->radius / 3;
-                if ($player->cells[$i]->x > getConf('gameWidth') - $borderCalc) {
-                    $player->cells[$i]->x = getConf('gameWidth') - $borderCalc;
+//            if(count($player->cells) > $i) {
+                $borderCalc = $cell->radius / 3;
+                if ($cell->x > getConf('gameWidth') - $borderCalc) {
+                    $cell->x = getConf('gameWidth') - $borderCalc;
                 }
-                if ($player->cells[$i]->y > getConf('gameHeight') - $borderCalc) {
-                    $player->cells[$i]->y = getConf('gameHeight') - $borderCalc;
+                if ($cell->y > getConf('gameHeight') - $borderCalc) {
+                    $cell->y = getConf('gameHeight') - $borderCalc;
                 }
-                if ($player->cells[$i]->x < $borderCalc) {
-                    $player->cells[$i]->x = $borderCalc;
+                if ($cell->x < $borderCalc) {
+                    $cell->x = $borderCalc;
                 }
-                if ($player->cells[$i]->y < $borderCalc) {
-                    $player->cells[$i]->y = $borderCalc;
+                if ($cell->y < $borderCalc) {
+                    $cell->y = $borderCalc;
                 }
-                $x += $player->cells[$i]->x;
-                $y += $player->cells[$i]->y;
-            }
+                $x += $cell->x;
+                $y += $cell->y;
+//            }
         }
+        $player->cells = array_values($player->cells);
         $player->x = $x/count($player->cells);
         $player->y = $y/count($player->cells);
     }
@@ -546,9 +530,10 @@ class GameLogicService
      * 实体移动循环
      */
     private function moveloop(){
-        foreach($this->userList as &$user){
-            $this->tickPlayer($user);
+        foreach($this->userList as $k => &$user){
+            $this->tickPlayer($user, $k);
         }
+//        $this->userList = array_values($this->userList);
         foreach($this->massFood as &$food) {
             if($food->speed > 0) {
                 $this->moveMass($food);
@@ -561,9 +546,9 @@ class GameLogicService
      */
     private function gameloop(){
         if (count($this->userList) > 0){
-            //按质量降序
+            //按质量降序 这里重新排列了key
             usort($this->userList, function(User $a, User $b){
-                return $b->mass - $a->mass;
+                return $b->massTotal - $a->massTotal;
             });
 
             //更新排行榜
@@ -583,7 +568,7 @@ class GameLogicService
             }else {
                 $leaderLen = count($this->leaderBoard);
                 for ($i = 0; $i < $leaderLen; $i++) {
-                    if ($this->leaderBoard[$i]->id != $topUsers[$i]->id) {
+                    if ($this->leaderBoard[$i]['id'] != $topUsers[$i]['id']) {
                         $this->leaderBoard = $topUsers;
                         $this->leaderBoardChanged = true;
                         break;
@@ -593,14 +578,15 @@ class GameLogicService
             //质量流失
             for ($i = 0; $i < $userLen; $i++) {
                 //遍历每个玩家所有的细胞
-                $cellLen = count($this->userList[$i]->cells);
-                for($z = 0; $z < $cellLen; $z++) {
+//                $cellLen = count($this->userList[$i]->cells);
+//                for($z = 0; $z < $cellLen; $z++) {
+                foreach($this->userList[$i]->cells as $z => &$cell){
                     //当前细胞质量流失以后>默认玩家质量 && 当前细胞质量 > 可以流失质量下限 则进行流失
-                    if ($this->userList[$i]->cells[$z]->mass * (1 - (getConf('massLossRate') / 1000)) > getConf('defaultPlayerMass') && $this->userList[$i]->massTotal > getConf('minMassLoss')) {
+                    if ($cell->mass * (1 - (getConf('massLossRate') / 1000)) > getConf('defaultPlayerMass') && $this->userList[$i]->massTotal > getConf('minMassLoss')) {
                         //流失以后的质量
-                        $massLost = $this->userList[$i]->cells[$z]->mass * (1 - (getConf('massLossRate') / 1000));
-                        $this->userList[$i]->massTotal -= $this->userList[$i]->cells[$z]->mass - $massLost;
-                        $this->userList[$i]->cells[$z]->mass = $massLost;
+                        $massLost = $cell->mass * (1 - (getConf('massLossRate') / 1000));
+                        $this->userList[$i]->massTotal -= $cell->mass - $massLost;
+                        $cell->mass = $massLost;
                     }
                 }
             }
@@ -627,8 +613,8 @@ class GameLogicService
                         return $f;
                     }
                 }, $this->food), function($f){
-                    return $f;
-                }
+                return $f;
+            }
             );
             $visibleVirus  = array_filter(
                 array_map(function($f) use (&$user){
@@ -639,8 +625,8 @@ class GameLogicService
                         return $f;
                     }
                 }, $this->virus), function($f){
-                    return $f;
-                }
+                return $f;
+            }
             );
             $visibleMass = array_filter(
                 array_map(function($f) use (&$user){
@@ -651,10 +637,10 @@ class GameLogicService
                         return $f;
                     }
                 }, $this->massFood), function($f){
-                    return $f;
-                }
+                return $f;
+            }
             );
-            $visibleCells  = array_filter( 
+            $visibleCells  = array_filter(
                 array_map(function($f) use(&$user){
                     foreach($f->cells as &$cell)
                     {
@@ -662,8 +648,8 @@ class GameLogicService
                             $cell->x-$cell->radius < $user->x + $user->screenWidth/2 + 20 &&
                             $cell->y+$cell->radius > $user->y - $user->screenHeight/2 - 20 &&
                             $cell->y-$cell->radius < $user->y + $user->screenHeight/2 + 20) {
-                        if($f->id != $user->id) {
-                            return array(
+                            if($f->id != $user->id) {
+                                return array(
                                     'id' => $f->id,
                                     'x' => $f->x,
                                     'y' => $f->y,
@@ -673,20 +659,19 @@ class GameLogicService
                                     'name' => $f->name
                                 );
                             } else {
-                            //console.log("Nombre: " + f.name + " Es Usuario");
-                            return array(
-                                'x' => $f->x,
-                                'y' => $f->y,
-                                'cells' => &$f->cells,
-                                'massTotal' => round($f->massTotal),
-                                'hue' => $f->hue,
-                            );
+                                return array(
+                                    'x' => $f->x,
+                                    'y' => $f->y,
+                                    'cells' => &$f->cells,
+                                    'massTotal' => round($f->massTotal),
+                                    'hue' => $f->hue,
+                                );
+                            }
                         }
                     }
-                }
-            }, $this->userList),
-                function($f) { 
-                    return $f; 
+                }, $this->userList),
+                function($f) {
+                    return $f;
                 }
             );
             $visibleCells = array_values($visibleCells);

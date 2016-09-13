@@ -3,7 +3,7 @@
     "http_port": 3000,
 
     "foodMass": 1,
-    "fireFood": 20,
+    "fireFood": 10,
     "limitSplit": 16,
     "defaultPlayerMass": 10,
 	"virus": {
@@ -11,8 +11,8 @@
       "stroke": "#19D119",
       "strokeWidth": 20,
       "defaultMass": {
-          "from": 100,
-          "to": 150
+          "from": 20,
+          "to": 30
       },
       "splitMass": 180
 	},
