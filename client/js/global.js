@@ -32,4 +32,6 @@ module.exports = {
     toggleMassState: 0,
     backgroundColor: '#f2fbff',
     lineColor: '#000000',
+    domain: '127.0.0.1',
+    ws_port:'9501'
 };

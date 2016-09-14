@@ -27,4 +27,5 @@ Backend rewrite with PHP swoole extension
 	```
 
 ## Run
-Run with `npm start`, and visit http://localhost:3000 in your browser.
+1. Configure your domain in `client/js/global.js` with default value localhost.
+2. Run with `npm start`, and visit http://localhost:3000 in your browser.

@@ -66,8 +66,11 @@ class GameLogicService
         return $this->socketServer->push($fd, json_encode($arr));
     }
 
-    private function broadcast($action, $data){
+    private function broadcast($action, $data, $except = null){
         foreach($this->userList as &$user){
+            if($except && $user->id == $except){
+                continue;
+            }
             $this->send($action, $data, $user->id);
         }
     }
@@ -130,9 +133,9 @@ class GameLogicService
                 }
                 break;
             case 'playerChat':
-                $_sender = preg_replace('/(<([^>]+)>)/ig', '', $data['sender']);
-                $_message = preg_replace('/(<([^>]+)>)/ig', '', $data['message']);
-                $this->broadcast('serverSendPlayerChat', array('sender'=> $_sender, 'message'=> substr($_message, 0,35)));
+                $_sender = preg_replace('/(<([^>]+)>)/i', '', $data['sender']);
+                $_message = preg_replace('/(<([^>]+)>)/i', '', $data['message']);
+                $this->broadcast('serverSendPlayerChat', array('sender'=> $_sender, 'message'=> substr($_message, 0,35)), $fd);
                 break;
             case 'pass' :
                 if ($data[0] === getConf('adminPass')) {
@@ -309,8 +312,8 @@ class GameLogicService
             //判断被吃掉的food
             foreach ($this->food as $k => &$f) {
                 if (Collision::pointInCircle(new V($f->x, $f->y), $playerCircle)) {
-//                    array_splice($this->food, $k, 1);
-                    unset($this->food[$k]);
+                    array_splice($this->food, $k, 1);
+//                    unset($this->food[$k]);
                     $foodEatenNum++;
                 }
             }
@@ -330,7 +333,8 @@ class GameLogicService
                         //DO NOTHING
                     } elseif ($cell->mass > $m->masa * 1.1) {
                         $masaGanada += $m->masa;
-                        unset($this->massFood[$k]);
+                        array_splice($this->massFood, $k, 1);
+//                        unset($this->massFood[$k]);
                     }
                 }
             }
@@ -393,11 +397,11 @@ class GameLogicService
                     if ($numUser > -1) {
                         if (count($this->userList[$numUser]->cells) > 1) {
                             $this->userList[$numUser]->massTotal -= $collision['bUser']['mass'];
-//                            array_splice($this->userList[$numUser]->cells, $collision['bUser']['num'], 1);
-                            unset($this->userList[$numUser]->cells[$collision['bUser']['num']]);
+                            array_splice($this->userList[$numUser]->cells, $collision['bUser']['num'], 1);
+//                            unset($this->userList[$numUser]->cells[$collision['bUser']['num']]);
                         } else {
-//                            array_splice($this->userList, $numUser, 1);
-                            unset($this->userList[$numUser]);
+                            array_splice($this->userList, $numUser, 1);
+//                            unset($this->userList[$numUser]);
                             $this->send("playerDied", array(
                                 'name' => $collision['bUser']['name']
                             ),$socketId);
@@ -409,7 +413,7 @@ class GameLogicService
                 }
             }
             unset($playerCollisions);
-            unset($treee);
+//            unset($tree);
         }
     }
 
@@ -473,8 +477,8 @@ class GameLogicService
                             $cell->mass += $cell2->mass;
                             $cell->radius = massToRadius($cell->mass);
                             //j号细胞被i吃掉了
-                            unset($player->cells[$j]);
-//                            array_splice($player->cells, $j ,1);
+//                            unset($player->cells[$j]);
+                            array_splice($player->cells, $j ,1);
                         }
                     }
                 }
@@ -497,7 +501,7 @@ class GameLogicService
                 $y += $cell->y;
 //            }
         }
-        $player->cells = array_values($player->cells);
+//        $player->cells = array_values($player->cells);
         $player->x = $x/count($player->cells);
         $player->y = $y/count($player->cells);
     }
